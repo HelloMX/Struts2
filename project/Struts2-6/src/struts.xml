@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+        "http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+    <package name="usersPackage" extends="struts-default">
+
+        <interceptors>
+            <interceptor name="First" class="interceptor.FirstInterceptor">
+                <param name="someThing">admin</param>
+            </interceptor>
+            <interceptor name="Second" class="interceptor.SecondInterceptor"/>
+
+            <interceptor name="MethodInter" class="interceptor.MethodInterceptor">
+                <param name="includeMethods">add,delete</param>
+
+            </interceptor>
+
+
+            <interceptor-stack name="All_interceptor">
+                <interceptor-ref name="First"></interceptor-ref>
+                <interceptor-ref name="Second"></interceptor-ref>
+                <interceptor-ref name="defaultStack"></interceptor-ref>
+            </interceptor-stack>
+        </interceptors>
+
+        <default-interceptor-ref name="All_interceptor"/>
+
+        <global-results>
+            <result>/error.jsp</result>
+        </global-results>
+
+        <action name="loginAction" class="action.LoginAction">
+            <interceptor-ref name="All_interceptor"></interceptor-ref>
+            <result name="success">/login.jsp</result>
+        </action>
+
+
+        <action name="*_*" class="action.{1}Action" method="{2}">
+            <interceptor-ref name="MethodInter"></interceptor-ref>
+            <interceptor-ref name="defaultStack"></interceptor-ref>
+            <result name="{1}success">/{1}index.jsp</result>
+        </action>
+
+    </package>
+
+    <constant name="struts.enable.DynamicMethodInvocation" value="true" />
+
+    <package name="SecondPackage" extends="struts-default">
+        <interceptors>
+            <interceptor name="checklogin" class="interceptor.CheckLoginInterceptor"/>
+
+            <interceptor-stack name="default_interceptor">
+                <!--登录拦截器 登陆成功加入session  登录失败 直接跳转到登录界面-->
+                <interceptor-ref name="checklogin"></interceptor-ref>
+                <interceptor-ref name="defaultStack"></interceptor-ref>
+            </interceptor-stack>
+        </interceptors>
+
+        <!--默认都要通过登录检查-->
+        <default-interceptor-ref name="default_interceptor"/>
+
+        <global-results>
+            <result>/login.jsp</result>
+        </global-results>
+
+        <!--给登录开放拦截器-->
+        <action name="loginAction" class="action.LoginAction">
+            <interceptor-ref name="defaultStack"></interceptor-ref>
+            <result name="success">/login.jsp</result>
+            <result name="fail">/login.jsp</result>
+        </action>
+
+        <!--通过登录拦截器之后的结果，如果为成功登录 拦截器会直接返回fail-->
+        <action name="salaryAction" class="action.SalaryAction" >
+            <result name="success">/success.jsp</result>
+            <result name="fail">/login.jsp</result>
+        </action>
+
+    </package>
+
+
+</struts>
